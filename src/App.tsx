@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { readEvents, type EventRow } from './lib/events';
 import { readPlaces, type PlaceRow } from './lib/places';
+import { EventDetailModal } from './components/EventDetailModal';
 
 const dayNames = ['Pn', 'Wt', 'Śr', 'Cz', 'Pt', 'Sb', 'Nd'];
 
@@ -88,6 +89,8 @@ function App() {
     const now = new Date();
     return new Date(now.getFullYear(), now.getMonth(), 1);
   });
+  const [selectedEvent, setSelectedEvent] = useState<EventRow | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -152,6 +155,18 @@ function App() {
   const changeMonth = (offset: number) => {
     setActiveMonth((prev) => new Date(prev.getFullYear(), prev.getMonth() + offset, 1));
   };
+
+  const handleOpenEventDetail = (event: EventRow) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
+
+  const handleCloseEventDetail = () => {
+    setModalOpen(false);
+    setSelectedEvent(null);
+  };
+
+  const selectedPlace = selectedEvent?.place ? placesById.get(selectedEvent.place) ?? null : null;
 
   return (
     <Box sx={{ minHeight: '100vh', py: { xs: 3, md: 6 } }}>
@@ -299,7 +314,15 @@ function App() {
                             label={event.name}
                             color="primary"
                             variant="outlined"
-                            sx={{ justifyContent: 'flex-start' }}
+                            sx={{
+                              justifyContent: 'flex-start',
+                              cursor: 'pointer',
+                              transition: 'all 0.2s ease',
+                              '&:hover': {
+                                backgroundColor: 'rgba(56, 189, 248, 0.16)',
+                              },
+                            }}
+                            onClick={() => handleOpenEventDetail(event)}
                           />
                         ))}
 
@@ -354,7 +377,20 @@ function App() {
                   const status = getEventStatus(event);
 
                   return (
-                  <Card variant="outlined" sx={{ height: '100%' }} key={event.id}>
+                  <Card
+                    variant="outlined"
+                    sx={{
+                      height: '100%',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease',
+                      '&:hover': {
+                        boxShadow: 2,
+                        transform: 'translateY(-2px)',
+                      },
+                    }}
+                    key={event.id}
+                    onClick={() => handleOpenEventDetail(event)}
+                  >
                     <CardContent>
                       <Box sx={{ display: 'grid', gap: 2 }}>
                         <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
@@ -394,6 +430,13 @@ function App() {
           </Paper>
         </Box>
       </Container>
+
+      <EventDetailModal
+        event={selectedEvent}
+        place={selectedPlace}
+        open={modalOpen}
+        onClose={handleCloseEventDetail}
+      />
     </Box>
   );
 }
