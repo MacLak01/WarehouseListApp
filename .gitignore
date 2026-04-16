@@ -1,6 +1,10 @@
 node_modules
 dist
-.vscode
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+.agents
+skills-lock.json
+.env
+.env.*
+!.env.example
